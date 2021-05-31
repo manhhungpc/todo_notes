@@ -19,9 +19,9 @@ var mongoURL =
   "mongodb+srv://subuser:user@simplecrud.oqj6k.mongodb.net/simple_CRUD?retryWrites=true&w=majority";
 
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static("build"));
+  app.use(express.static(__dirname));
   app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "build", "index.html"));
+    res.sendFile(path.resolve(__dirname, __dirname, "index.html"));
   });
 }
 var Note = mongoose.model("Note", {
