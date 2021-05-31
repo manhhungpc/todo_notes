@@ -8,6 +8,7 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 const mongoose = require("mongoose");
 
+dotenv.config();
 const port = process.env.PORT || 3000;
 
 app.use(express.static(__dirname));
@@ -17,10 +18,9 @@ app.use(bodyParser.json());
 var mongoURL =
   "mongodb+srv://subuser:user@simplecrud.oqj6k.mongodb.net/simple_CRUD?retryWrites=true&w=majority";
 
-dotenv.config();
 if (process.env.NODE_ENV === "production") {
   app.use(express.static("build"));
-  app.get("/", (req, res) => {
+  app.get("*", (req, res) => {
     res.sendFile(path.resolve(__dirname, "build", "index.html"));
   });
 }

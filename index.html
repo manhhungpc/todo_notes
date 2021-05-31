@@ -24,9 +24,10 @@
     </div>
     <script>
         var socket = io().connect();
-        var ajaxURL = `http://0.0.0.0:${process.env.PORT}/list`;
+        var ajaxURL = `https://0.0.0.0:${process.env.PORT}/list`;
         /*
             for development env, please use: "http://localhost:3000/list"
+            for product. please use `https://0.0.0.0:${process.env.PORT}/list`
         */
         
         $(document).ready(function(){
@@ -99,13 +100,14 @@
         }
         function removeNote(del){
             //console.log($(`li #${del._id}`))
+            $(`#hr${del._id}`).remove();
             $(`#${del._id}`).remove();
         }
         
         /*----------------------------Append item to list------------------------------*/
         function addToList(data){
             let el = $(`
-                <hr/>
+                <hr id="hr${data._id}"/>
                 <li id="${data._id}">
                     <div class="p">
                         <p id="p${data._id}">${data.note}</p>
