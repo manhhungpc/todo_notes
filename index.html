@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./index.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"  crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <!--<script src="https://kit.fontawesome.com/27f90f1b58.js" crossorigin="anonymous"></script>-->
+    <script src="/socket.io/socket.io.js"></script>
+    <title>Document</title>
+    
+</head>
+<body>
+    <div class="container">
+        <header class="header"> ToDo List </header>
+        <form class="input-area">
+            <input type="text" placeholder="ToDo" id="text-field"/>
+            <button id="submit" type="button">Send</button>
+        </form>
+        <ul id="list"></ul>
+    </div>
+    <script>
+        var socket = io().connect();
+        var ajaxURL = `http://0.0.0.0:${process.env.PORT}/list`;
+        /*
+            for development env, please use: "http://localhost:3000/list"
+        */
+        
+        $(document).ready(function(){
+            $("#submit").click(()=>{
+                var content = {note: $("#text-field").val()};                 
+                if(content.note)
+                    postNote(content);
+                    socket.emit("new note", content.note);
+                
+            })
+            
+            /*----------------------------Edit button------------------------------*/
+            $("#list").on("click", ".edit", function(){
+                editInput(this.id)
+            })   
+            $("#list").on("click",`.submitInput`, function(){
+                let value = $(`#input${this.id}`).val();
+                if(value)              
+                    changeNote({note: value, _id: this.id}, this.id);
+                $(".temp").remove()
+                socket.emit("edit note", {note: value})
+                
+            })
+            
+            /*----------------------------Delete button------------------------------*/
+            $("#list").on("click", ".delete", function(){
+                deleteNote({_id: this.id})
+            }) 
+             
+            getNote();                        
+        })
+        socket.on("edit note", editList);
+        socket.on('new note', addToList);
+        /* POST */
+        function postNote(content){
+            $.ajax({
+                url: ajaxURL,
+                method: "POST",
+                data: content,
+            })
+            
+        }
+        /* GET */
+        function getNote(){
+            $.get(ajaxURL, (data)=>{
+                data.forEach(addToList);                
+            })
+        }
+        /* PUT */
+        function changeNote(changed, id){
+            $.ajax({
+                url: ajaxURL,
+                method: "PUT",
+                data: changed, // a data to send it to server
+                success: editList(changed, id)// a callback function when put successful
+            })
+        }
+        function editList(data, id){
+            $(`#p${id}`).text(data.note)            
+        }
+
+        /* DELETE */
+        function deleteNote(del){
+            $.ajax({
+                url: ajaxURL,
+                method: "DELETE",
+                data: del,
+                success: removeNote(del),
+            })
+        }
+        function removeNote(del){
+            //console.log($(`li #${del._id}`))
+            $(`#${del._id}`).remove();
+        }
+        
+        /*----------------------------Append item to list------------------------------*/
+        function addToList(data){
+            let el = $(`
+                <hr/>
+                <li id="${data._id}">
+                    <div class="p">
+                        <p id="p${data._id}">${data.note}</p>
+                    </div>
+                    <div class="btn-group">
+                        <button class="edit" id="${data._id}" type="button">Edit</button>
+                        <button class="delete" id="${data._id}" type="button">Delete</button>
+                    </div>
+                </li>
+            `)
+            $("#list").append(el);                              
+        }
+
+        /*----------------------------Change content------------------------------*/
+        function editInput(id){
+            let input = $(`
+                <div class="temp">
+                    <input type="text" placeholder="ToDo" id="input${id}"/>
+                    <button class="submitInput" id="${id}" type="button">Send</button>
+                </div>
+            `)
+            $(`#${id}`).append(input);
+            
+            
+        }
+        /*----------------------------Delete content------------------------------*/
+        
+    </script>
+</body>
+</html>
