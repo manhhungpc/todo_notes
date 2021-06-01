@@ -19,9 +19,9 @@ var mongoURL =
   "mongodb+srv://subuser:user@simplecrud.oqj6k.mongodb.net/simple_CRUD?retryWrites=true&w=majority";
 
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(__dirname));
+  app.use(express.static("public"));
   app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, __dirname, "index.html"));
+    res.sendFile(path.resolve(__dirname, "public", "index.html"));
   });
 }
 var Note = mongoose.model("Note", {
@@ -66,6 +66,6 @@ io.on("connection", (socket) => {
 mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, (err) => {
   console.log("connected to db - ", err);
 });
-server.listen(port, () => {
+server.listen(port, "0.0.0.0", () => {
   console.log(`App is listening on ${port}`);
 });
